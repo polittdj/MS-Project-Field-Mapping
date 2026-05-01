@@ -100,6 +100,18 @@ Public Enum FieldDataType
     fdtOutlineCode = 9
 End Enum
 
+'--- Field scope (Task vs Resource custom field) ----------------------------
+' Task and Resource custom fields are separate slot pools in Project; Text1
+' on tasks is a different field from Text1 on resources. The mapper treats
+' them as distinct universes -- mappings only happen within a scope.
+'
+' Numeric values mirror MS Project's PjFieldType enum:
+'   pjTask = 0, pjResource = 1
+Public Enum FieldScope
+    fsTask = 0
+    fsResource = 1
+End Enum
+
 '==============================================================================
 ' SlotCountForType
 ' ----------------------------------------------------------------------------
@@ -151,6 +163,17 @@ Public Function SeverityName(ByVal s As LogSeverity) As String
         Case sevWarn:  SeverityName = "WARN"
         Case sevError: SeverityName = "ERROR"
         Case Else:     SeverityName = "INFO"
+    End Select
+End Function
+
+'==============================================================================
+' FieldScopeName
+'==============================================================================
+Public Function FieldScopeName(ByVal s As FieldScope) As String
+    Select Case s
+        Case fsTask:     FieldScopeName = "Task"
+        Case fsResource: FieldScopeName = "Resource"
+        Case Else:       FieldScopeName = "Unknown"
     End Select
 End Function
 

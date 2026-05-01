@@ -16,27 +16,35 @@ in Power BI and other reporting tools.
 - Persists mappings as `.fmap` files so a project pair can be re-run without
   re-mapping.
 
-## Current status: Phase 0 (Foundation)
+## Current status: Phases 0-1
 
-This branch ships the foundation only:
+This branch ships the foundation plus the single-file scanner:
 
 - **Environment detection** (`modEnvironment`) - host check, version check,
   AutomationSecurity, Trusted Locations, MOTW probe.
 - **Logging infrastructure** (`clsLogger` + `clsLogEntry`).
 - **Run-context object** (`clsRunContext`) - replaces global state.
 - **Constants & enums** (`modConstants`).
-- **Phase 0 UI** (`frmMain`) - one button: **Run Diagnostics**.
+- **File fingerprint hashing** (`modHash`) - FNV-1a 32-bit.
+- **Field metadata + project scan classes** (`clsFieldMetadata`,
+  `clsProjectScan`).
+- **File scanner** (`modFileScanner`) - open/scan/close one `.mpp`,
+  enumerate Task and Resource custom fields, sample values, detect
+  duplicate aliases.
+- **Phase 0 UI** (`frmMain`) - **Run Diagnostics** button.
+- **Progress UI** (`frmProgress`) - subscribed-to-logger live log + Cancel
+  button. Wired up for use by the Phase 2 multi-file orchestrator.
 
-The full pipeline (file scanner, auto-mapper, mapping UI, extraction, merge,
-persistence) lands in subsequent phases.
+The full pipeline (multi-file orchestration, auto-mapper, mapping UI,
+extraction, merge, persistence) lands in subsequent phases.
 
 ## Roadmap
 
 | Phase | Goal | Status |
 |---|---|---|
-| 0 | Foundation: environment detection + diagnostics UI | **this branch** |
-| 1 | File scanner: open/scan/close one `.mpp` | planned |
-| 2 | Multi-file orchestration with cancel + error recovery | planned |
+| 0 | Foundation: environment detection + diagnostics UI | **shipped** |
+| 1 | File scanner: open/scan/close one `.mpp` | **shipped** |
+| 2 | Multi-file orchestration with cancel + error recovery | next |
 | 3 | Auto-mapper: confidence scoring + threshold partitioning | planned |
 | 4 | Manual mapping UI (3-listbox `frmMapping`) | planned |
 | 5 | Collision handling | planned |
@@ -67,13 +75,19 @@ fallback for manual form construction.
 ```
 src/                          VBA source modules (.bas, .cls, .frm)
   modConstants.bas            enums, slot tables, threshold constants
+  modHash.bas                 FNV-1a 32-bit + file fingerprint
   modEnvironment.bas          host/version/security detection
-  modMain.bas                 entry points (ShowMain, RunDiagnostics)
+  modFileScanner.bas          open/scan/close one .mpp; enumerate fields
+  modMain.bas                 entry points (ShowMain, RunDiagnostics, Phase1_TestScan)
   clsLogEntry.cls             single log record
   clsLogger.cls               buffered session logger
+  clsFieldMetadata.cls        one custom-field record (alias, type, samples)
+  clsProjectScan.cls          per-.mpp scan results
   clsRunContext.cls           per-session state container
   frmMain.frm                 Phase 0 UI (Diagnostics only)
-  frmMain.code.bas            code-only fallback for manual form construction
+  frmMain.code.bas            code-only fallback
+  frmProgress.frm             live progress + log UI; Cancel button
+  frmProgress.code.bas        code-only fallback
 samples/                      sample .mpp files (added in later phases)
 dist/                         built bundle / signed template (added in Phase 9)
 docs/                         supplementary documentation (added as needed)
